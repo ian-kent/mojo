@@ -42,9 +42,9 @@ sub emit_safe {
 sub has_subscribers { !!@{shift->subscribers(shift)} }
 
 sub on {
-  my ($self, $name, $cb) = @_;
-  push @{$self->{events}{$name} ||= []}, $cb;
-  return $cb;
+  my ($self, %events) = @_;
+  push @{$self->{events}{$_} ||= []}, $events{$_} for keys %events;
+  return wantarray ? %events : $_[2];
 }
 
 sub once {
@@ -165,6 +165,10 @@ Subscribe to event.
     my ($e, @args) = @_;
     ...
   });
+
+Subscribe to multiple events.
+
+  my %cbs = $e->on(foo => sub{}, bar => sub{});
 
 =head2 once
 

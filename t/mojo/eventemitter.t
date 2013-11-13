@@ -157,4 +157,27 @@ is $buffer, 'abctwo123twoabcthree123threedef', 'right result';
 $e->emit(one => $buffer => 'x');
 is $buffer, 'abctwo123twoabcthree123threedefabcx123x', 'right result';
 
+# Multiple events
+$e = Mojo::EventEmitter->new;
+$counter = 0;
+my $cb1 = sub { ++$counter };
+my $cb2 = sub { ++$counter };
+my %cbs = $e->on(
+  foo => $cb1,
+  bar => $cb2,
+);
+is(scalar keys %cbs, 2, 'multiple callbacks returned');
+$e->emit('foo');
+is($counter, 1, 'first event registered');
+$e->emit('bar');
+is($counter, 2, 'second event registered');
+$e->unsubscribe(foo => $cbs{foo});
+$e->emit('foo');
+is($counter, 2, 'first event unsubscribed');
+is scalar @{$e->subscribers('foo')}, 0, 'no subscribers';
+$e->unsubscribe(bar => $cbs{bar});
+$e->emit('bar');
+is($counter, 2, 'second event unsubscribed');
+is scalar @{$e->subscribers('bar')}, 0, 'no subscribers';
+
 done_testing();
